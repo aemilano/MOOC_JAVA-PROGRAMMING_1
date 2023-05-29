@@ -6,101 +6,62 @@ import java.util.Scanner;
 public class SportStatistics {
 
     public static void main(String[] args) {
-        ArrayList<Team> teamList = new ArrayList<>();
         Scanner scanner = new Scanner(System.in);
+        ArrayList<Game> gameArray = new ArrayList<>();
 
         System.out.println("File:");
-        String file = scanner.nextLine();
+        String fileName = scanner.nextLine();
 
-        teamList = importData(file);
+        gameArray = readFile(fileName);
 
-        System.out.println("Team: ");
-        String teamName = scanner.nextLine();
+        if (gameArray.isEmpty()) {
+            scanner.close();
+            return;
+        }
 
-        int games = 0;
+        System.out.println("Team:");
+        String team = scanner.nextLine();
+
+        scanner.close();
+
+        int gamesplayed = 0;
         int wins = 0;
         int losses = 0;
 
-        for (Team i : teamList) {
-            if (i.getName().equals(teamName)) {
-                games = i.getGamesPlayed();
-                wins = i.getWins();
-                losses = i.getLosses();
-                break;
+        for (Game i : gameArray) {
+            if (team.equals(i.getVictor())) {
+                gamesplayed++;
+                wins++;
+            
+            } else if (team.equals(i.getLoser())) {
+                gamesplayed++;
+                losses++;
             }
         }
 
-        System.out.println("Games: " + games);
+        System.out.println("Games: " + gamesplayed);
         System.out.println("Wins: " + wins);
         System.out.println("Losses: " + losses);
 
     }
 
-    public static ArrayList<Team> importData(String file) {
-        ArrayList<Team> list = new ArrayList<>();
-
-        try (Scanner fileScan = new Scanner(Paths.get(file))) {
+    public static ArrayList<Game> readFile(String fileName) {
+        ArrayList<Game> gameList = new ArrayList<>();
+        try (Scanner fileScan = new Scanner(Paths.get(fileName))) {
             while (fileScan.hasNextLine()) {
                 
                 String[] line = fileScan.nextLine().split(",");
-                String teamOneName = line[0];
-                String teamTwoName = line[1];
-                int teamOneScore = Integer.valueOf(line[2]);
-                int teamTwoScore = Integer.valueOf(line[3]);
-                boolean teamOneExists = false;
-                boolean teamTwoExists = false;
 
-                for (Team i : list) {
-                    if (i.getName().equals(teamOneName)) {
-                        
-                        if (teamOneScore > teamTwoScore) {
-                            i.setWins();
-                        } else {
-                            i.setLosses();
-                        }
+                int homePoints = Integer.valueOf(line[2]);
+                int visitPoints = Integer.valueOf(line[3]);
 
-                        teamOneExists = true;
-                        continue;
-                    
-                    }
-                    
-                    if (i.getName().equals(teamTwoName)) {
-                        
-                        if (teamTwoScore > teamOneScore) {
-                            i.setWins();
-                        } else {
-                            i.setLosses();
-                        }
-
-                        teamTwoExists = true;
-                        continue;
-
-                    }
-                }
-
-                if (!teamOneExists) {
-                    if (teamOneScore > teamTwoScore) {
-                        list.add(new Team(teamOneName, true));
-                    
-                    } else {
-                        list.add(new Team(teamOneName, false));
-                    }
-                }
-
-                if (!teamTwoExists) {
-                    if (teamTwoScore > teamOneScore) {
-                        list.add(new Team(teamTwoName, true));
-                    
-                    } else {
-                        list.add(new Team(teamTwoName, false));
-                    }
-                }
+                gameList.add(new Game(line[0], line[1], homePoints, visitPoints));
             }
         
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            System.out.println("Error: File read failed, File: " + e.getMessage());
         }
 
-        return list;
+        return gameList;
     }
 }
